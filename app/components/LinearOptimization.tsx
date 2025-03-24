@@ -1,6 +1,6 @@
 "use client";
 import { Chart, registerables } from "chart.js";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Bar, Line } from "react-chartjs-2";
 
 Chart.register(...registerables);
@@ -16,13 +16,19 @@ const coefficients: Record<Attributes, number> = {
     Balance: 1.2583,
 };
 
+// Function to generate random attribute values
 const generateRandomAttributes = (): Record<Attributes, number> =>
     Object.fromEntries(
         Object.keys(coefficients).map((key) => [key, (Math.random() * 5 + 5).toFixed(2)])
     ) as unknown as Record<Attributes, number>;
 
 export default function LinearOptimization() {
-    const [attributes, setAttributes] = useState(generateRandomAttributes);
+    const [attributes, setAttributes] = useState<Record<Attributes, number>>({} as Record<Attributes, number>);
+
+    // Initialize attributes inside useEffect to avoid hydration mismatch
+    useEffect(() => {
+        setAttributes(generateRandomAttributes());
+    }, []);
 
     const predictedScore = useMemo(() => {
         return (
@@ -43,17 +49,15 @@ export default function LinearOptimization() {
         ) as Record<Attributes, number[]>;
     }, [attributes, predictedScore]);
 
-    const colors = useMemo(
-        () =>
-            Object.keys(attributes).map((_, index) => {
-                const hue = (index * 60) % 360;
-                return {
-                    borderColor: `hsl(${hue}, 70%, 50%)`,
-                    backgroundColor: `hsla(${hue}, 70%, 50%, 0.5)`,
-                };
-            }),
-        [attributes]
-    );
+    const colors = useMemo(() =>
+        Object.keys(attributes).map(() => {
+            const hue = Math.floor(Math.random() * 360); // Ensure random colors
+            return {
+                borderColor: `hsl(${hue}, 70%, 50%)`,
+                backgroundColor: `hsla(${hue}, 70%, 50%, 0.5)`,
+            };
+        })
+        , [attributes]);
 
     const contributionData = {
         labels: ["Now"],
@@ -85,9 +89,8 @@ export default function LinearOptimization() {
     };
 
     const handleChange = useCallback((key: Attributes, value: number) => {
-        setAttributes((prev) => ({ ...prev, [key]: value.toFixed(2) }));
+        setAttributes((prev) => ({ ...prev, [key]: parseFloat(value.toFixed(2)) }));
     }, []);
-
 
     return (
         <div className="p-5 bg-black shadow-lg rounded-lg">
