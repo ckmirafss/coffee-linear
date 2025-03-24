@@ -1,6 +1,6 @@
 "use client";
 import { Chart, registerables } from "chart.js";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Bar, Line } from "react-chartjs-2";
 
 Chart.register(...registerables);
@@ -18,8 +18,8 @@ const coefficients: Record<Attributes, number> = {
 
 const generateRandomAttributes = (): Record<Attributes, number> =>
     Object.fromEntries(
-        Object.keys(coefficients).map((key) => [key, Math.random() * 5 + 5])
-    ) as Record<Attributes, number>;
+        Object.keys(coefficients).map((key) => [key, (Math.random() * 5 + 5).toFixed(2)])
+    ) as unknown as Record<Attributes, number>;
 
 export default function LinearOptimization() {
     const [attributes, setAttributes] = useState(generateRandomAttributes);
@@ -52,7 +52,7 @@ export default function LinearOptimization() {
                     backgroundColor: `hsla(${hue}, 70%, 50%, 0.5)`,
                 };
             }),
-        []
+        [attributes]
     );
 
     const contributionData = {
@@ -84,9 +84,10 @@ export default function LinearOptimization() {
         ],
     };
 
-    const handleChange = (key: Attributes, value: number) => {
-        setAttributes((prev) => ({ ...prev, [key]: value }));
-    };
+    const handleChange = useCallback((key: Attributes, value: number) => {
+        setAttributes((prev) => ({ ...prev, [key]: value.toFixed(2) }));
+    }, []);
+
 
     return (
         <div className="p-5 bg-black shadow-lg rounded-lg">
